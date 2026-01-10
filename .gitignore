@@ -1,0 +1,157 @@
+
+# Claude Code local settings and skills
+.claude/
+.serena/
+# plans/ - TRACKED: implementation plans
+
+# Claude Memory Plugin (claude-mem MCP)
+.claude-mem/
+
+# AI Assistant Context Files (auto-generated)
+**/CLAUDE.md
+
+# Documentation files (PDFs, papers, generated docs)
+docs/**/*.*
+!docs/**/*.md
+!docs/**/README*
+
+
+# Removed Windows wrapper files per user request
+hive-mind-prompt-*.txt
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+
+# Environment files (keep .env.example)
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# Log files
+*.log
+
+# UV
+# uv.lock - TRACKED: lockfile for reproducible builds
+
+# Generated/deleted files
+pyproject.toml.txt
+.reports/
+
+# Testing
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+coverage.json
+*.cover
+.hypothesis/
+.tox/
+.nox/
+
+# Type checking
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pytype/
+.pyre/
+.pyrefly/
+pyrightconfig.json
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+/tmp/
+
+# Ruff
+.ruff_cache/
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
+
+# Documentation builds
+docs/_build/
+site/
+
+# Logs
+*.log
+
+# Reports (network tests, diagnostics)
+report/
+
+# Legal documents (44-FZ data) - large files
+doc_domain_44fz/
+*.zip
+
+# Runtime data (optimization workflow outputs)
+data/checkpoints/
+data/simba_rules/
+data/llm_logs/
+data/programs/
+# data/optimization_results/baseline_cost.json - TRACKED: cost baseline reference
+
+# Module graphs and visualizations
+tach_module_graph.dot
+
+# Claude Flow generated files
+.claude/settings.local.json
+.mcp.json
+claude-flow.config.json
+.swarm/
+.hive-mind/
+.claude-flow/
+memory/
+coordination/
+memory/claude-flow-data.json
+memory/sessions/*
+!memory/sessions/README.md
+memory/agents/*
+!memory/agents/README.md
+coordination/memory_bank/*
+coordination/subtasks/*
+coordination/orchestration/*
+*.db
+*.db-journal
+*.db-wal
+*.sqlite
+*.sqlite-journal
+*.sqlite-wal
+claude-flow

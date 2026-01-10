@@ -1,0 +1,394 @@
+[project]
+name = "law-parser"
+version = "00.01.01"
+description = "Law parser for GraphRAG project with uv, ruff, and modern Python tooling"
+requires-python = ">=3.13"
+dependencies = [
+    # === Core Framework ===
+    "fastapi>=0.115.8",           # Web framework, Python 3.13 support
+    "granian>=2.6.0",             # Rust ASGI server (Tokio event loop)
+    "httpx>=0.28.1",              # Async HTTP client
+
+    # === Graph + RAG ===
+    "graphrag-sdk>=0.6.0",        # FalkorDB GraphRAG SDK
+    "falkordb>=1.2.2",            # Graph database client
+
+    # === LLM Integration ===
+    "litellm>=1.80.11",           # Multi-LLM router (MiniMax-M2, MiMo-V2-Flash, GLM-4.7)
+    "anthropic>=0.75.0",          # Anthropic API SDK (Claude Opus 4.5)
+    "google-genai>=1.0.0",        # Google Gemini API SDK (Constitution XII - Extended tier)
+    "google-cloud-aiplatform>=1.90.0",  # Vertex AI SDK (ADR-0012 - Enterprise tier)
+
+    # === Multi-Agent Coordination ===
+    "langgraph>=1.0.5",           # State machines for agents
+    "fast-langgraph>=0.1.0",      # Rust accelerator (700x checkpointing speedup)
+    "langsmith>=0.2.0",           # LLM observability
+
+    # === Prompt Optimization ===
+    "dspy>=3.0.4",                # Programmatic prompts (Stanford NLP)
+    "openinference-instrumentation-dspy>=0.1.29",  # DSPy tracing
+
+    # === Document Parsing ===
+    "python-docx>=1.1.2",         # DOCX parsing (Word 2007+)
+    "PyMuPDF>=1.24.9",            # PDF parsing (pymupdf)
+    "pytesseract>=0.3.13",        # OCR (Tesseract wrapper)
+    "Pillow>=11.1.0",             # Image processing
+    "lxml>=5.3.0",                # XML parsing (Word 2003 XML)
+    "docling>=2.65.0",             # Universal document converter (PDF/DOCX/HTML/images)
+    "pymupdf-layout>=1.0.0",        # Improved PDF layout extraction (optional)
+
+    # === Data & Validation ===
+    "pydantic>=2.0.0",            # Data validation (Principle 2)
+    "pydantic-core>=2.0.0",       # Pydantic core
+    "pydantic-settings>=2.12.0",  # Settings management
+    "pyyaml>=6.0.0",              # YAML parsing (externalized prompts)
+
+    # === Caching & Storage ===
+    "redis>=6.0.0,<7.0.0",        # Redis client (FalkorDB Redis endpoint)
+
+    # === Observability ===
+    "structlog>=24.0.0",          # Structured logging
+    "loguru>=0.7.0",              # Logging framework
+    "arize-phoenix>=4.0.0",       # OpenTelemetry tracing
+    "opentelemetry-api>=1.20.0",  # OpenTelemetry API
+    "opentelemetry-sdk>=1.20.0",  # OpenTelemetry SDK
+
+    # === Utilities ===
+    "python-dotenv>=1.0.0",       # Environment variables
+    "tenacity>=9.1.2",            # Retry library
+    "pyjwt>=2.9.0",               # JWT token generation (GLM/Z.AI auth)
+
+    # === Morphology & NLP (Legal Structure Recovery) ===
+    "pymorphy3>=1.2.0",           # Russian morphology analyzer
+    "razdel>=0.5.0,<1.0.0",       # Russian tokenizer/sentence splitter
+
+    # === Type Checking ===
+    "pyrefly>=0.1.0",             # Fast type checker (Meta, 10x faster than mypy)
+
+    # === CLI ===
+    "typer>=0.9.0",               # CLI framework
+    "rich>=14.0.0",               # Console output (progress bars, tables, colors) - ADR-0014
+]
+
+[project.scripts]
+fd-gr = "src_importers.cli:app"
+
+[project.optional-dependencies]
+dev = [
+    "ruff>=0.14.9",
+    "pre-commit>=4.0.0",
+    "pytest>=8.0.0",
+    "pytest-cov>=6.0.0",
+    "pytest-asyncio>=0.24.0",
+    "typer>=0.9.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src_common"]
+
+[dependency-groups]
+dev = [
+    "ruff>=0.14.9",
+    "pre-commit>=4.0.0",
+    "pytest>=8.0.0",
+    "pytest-cov>=6.0.0",
+    "pytest-asyncio>=0.24.0",
+    "pytest-xdist>=3.6.1",
+    # "pypict>=0.3.0",  # Disabled: no Python 3.13 wheels
+    "ty>=0.0.4",
+    "pyright>=1.1.407",
+    "tach>=0.10.0",
+    "hypothesis>=6.0.0",
+    "vulture>=2.13",
+    "radon>=6.0.0",
+    "bandit[toml]>=1.7.10",
+    "fawltydeps>=0.15.0",
+    "pyan3>=1.2.0",
+    "wily>=1.12.2",
+    "semgrep>=1.79.0",
+    "vcrpy>=8.0.0",            # LLM API recording/replay
+    "pytest-vcr>=1.0.2",       # pytest integration for VCR.py
+    "syrupy>=4.0.0",           # Snapshot testing
+    "mutmut>=3.4.0",           # Mutation testing
+    "pytest-benchmark>=5.2.0", # Performance benchmarking
+]
+
+[tool.ruff]
+# Target Python 3.13
+target-version = "py313"
+line-length = 100
+
+# Enable pycodestyle (`E`), pyflakes (`F`), isort (`I`), and other rules
+# LangGraph-optimized rule selection (Phase 0.4.5)
+lint.select = [
+    "E",      # pycodestyle errors
+    "F",      # pyflakes
+    "I",      # isort
+    "N",      # pep8-naming
+    "UP",     # pyupgrade
+    "B",      # flake8-bugbear
+    "C4",     # flake8-comprehensions
+    "DTZ",    # flake8-datetimez
+    "T10",    # flake8-debugger
+    "EM",     # flake8-errmsg
+    "ICN",    # flake8-import-conventions
+    "PIE",    # flake8-pie
+    "PT",     # flake8-pytest-style
+    "Q",      # flake8-quotes
+    "RSE",    # flake8-raise
+    "RET",    # flake8-return
+    "SIM",    # flake8-simplify
+    "TCH",    # flake8-type-checking
+    "ARG",    # flake8-unused-arguments
+    "PTH",    # flake8-use-pathlib
+    "ERA",    # eradicate
+    "PL",     # pylint
+    "PERF",   # perflint
+    "RUF",    # ruff-specific rules
+    # LangGraph-specific additions
+    "ANN",    # Type annotations (critical for StateT/InputT/OutputT)
+    "ASYNC",  # Async safety and optimization
+    # Phase 0.4.6: Extended quality rules
+    "G",      # flake8-logging-format (lazy % formatting)
+    "TRY",    # tryceratops (try/except patterns)
+    "FAST",   # FastAPI best practices (Annotated)
+    "FBT",    # flake8-boolean-trap (boolean arguments)
+    "SLF",    # flake8-self (private member access)
+    "PYI",    # flake8-pyi (stub annotations)
+    "A",      # flake8-builtins (builtin shadowing)
+]
+
+lint.ignore = [
+    "E501",    # line-too-long (handled by formatter)
+    "PLR0912", # too-many-branches (complex async error handling)
+    "PLR0913", # too-many-arguments
+    "PLR2004", # magic-value-comparison
+    "PLC0415", # import-outside-top-level (needed for lazy imports and avoiding circular deps)
+    "PLW0603", # global-statement (singleton pattern for registries)
+    "RUF001",  # ambiguous-unicode-character (Russian text in prompts)
+    "RUF002",  # ambiguous-unicode-character-docstring (Russian examples in docstrings)
+    "RUF003",  # ambiguous-unicode-character-comment (Russian examples in comments)
+]
+
+# LangGraph-specific per-file ignores (Phase 0.4.5)
+[tool.ruff.lint.per-file-ignores]
+# LangGraph patterns
+"**/agents/**" = ["PLR0913", "C901", "PLR0912", "ANN401"]  # Complex agent logic
+"**/state/**" = ["RUF012", "B008"]                         # State classes with mutable defaults
+"**/graphs/**" = ["PLR0915", "C901"]                       # Complex graph construction
+"**/nodes/**" = ["ARG002", "PLR0913"]                      # Node functions may not use all state
+"**/tools/**" = ["ARG001", "ARG002", "ANN401"]             # Tool interface compliance, dynamic JSON
+"**/checkpoints/**" = ["S311", "B904"]                     # Checkpoint serialization
+# FastAPI routes - types used at runtime for validation, Depends() pattern
+"**/api/routes.py" = ["TC001", "TC002", "TC003", "B008"]   # FastAPI schemas + Depends pattern
+"**/api/dependencies.py" = ["TC001", "TC002", "TC003", "B008"]  # FastAPI dependencies
+# ASGI/HTTP handlers - receive/send are dynamic
+"**/chat/app.py" = ["ANN401"]                              # ASGI receive/send types
+# Core infrastructure - Any needed for generic handling
+"**/core/logging.py" = ["ANN401"]                          # Logging accepts any data
+"**/core/loguru_config.py" = ["ANN401"]                    # Logger configuration
+"**/core/exceptions.py" = ["ANN401"]                       # Exception context
+"**/core/config.py" = ["ANN401"]                           # Dynamic settings
+"**/utils/observability.py" = ["ANN401"]                   # Tracing spans
+"**/utils/retry.py" = ["ANN401"]                           # Generic retry wrapper
+"**/utils/validation.py" = ["ANN401"]                      # Dynamic validation
+# Clients - external API responses
+"**/clients/base.py" = ["ANN401"]                          # Generic client base
+"**/clients/falkordb_client.py" = ["ANN401"]               # Graph query results
+"**/clients/falkordb_graphrag_client.py" = ["ANN401"]      # GraphRAG responses
+# MCP tools
+"**/mcp/tools.py" = ["ANN401", "ARG001"]                   # MCP tool arguments
+# Test-specific ignores
+"**/tests/**" = ["S101", "PT011", "PT012", "ARG001", "ARG002", "B", "PLR0913", "PLR2004", "ANN", "SLF001", "F841", "PTH123", "SIM117", "SIM113", "TRY300", "TRY003", "EM101", "RUF043", "RUF015", "TRY002", "ARG005", "FBT001", "ERA001"]
+# Scripts - network testing and analysis scripts
+"scripts/**" = ["PT028", "PTH123", "ARG002", "PLR0913", "ANN401", "DTZ005", "ERA001", "PLW2901"]
+# CLI tools - typer-specific patterns
+"**/cli/*.py" = ["TC003", "B008", "FBT001", "FBT003", "TRY301", "SIM113"]
+# Loaders - graph operations with unused params for future features
+"**/loaders/**" = ["ARG002", "FBT001", "FBT002", "TRY003", "EM102"]
+# DSPy modules - dynamic typing required for DSPy/LiteLLM integration
+"**/dspy/*.py" = ["ANN401", "ANN001", "ANN002", "ANN202", "ARG001", "TRY300", "TRY301", "DTZ005", "RUF059", "PTH123"]
+# Extractors - common extractor patterns
+"**/extractors/*.py" = ["FBT001", "FBT002", "TRY301", "SIM113", "ANN401", "TC003", "RUF012", "TC001", "TRY300"]
+# Utils - common utility patterns
+"**/utils/*.py" = ["TRY301", "TRY400", "G201", "EM102", "EM101", "TRY003", "PLW2901", "TC001", "A002", "TRY300", "SIM113"]
+# Examples can access private members for demonstration purposes
+"**/examples/**" = ["SLF001", "TRY301"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+
+[tool.ruff.lint.isort]
+known-first-party = ["src_common"]
+
+# LangGraph-optimized annotation settings (Phase 0.4.5)
+[tool.ruff.lint.flake8-annotations]
+allow-star-arg-any = true      # *args: Any допустим в LangGraph nodes
+ignore-fully-untyped = false   # Требуем типы везде
+suppress-dummy-args = true     # _: unused допустим
+suppress-none-returning = true # -> None можно опускать
+
+[tool.ruff.lint.flake8-type-checking]
+strict = true
+quote-annotations = true
+runtime-evaluated-base-classes = [
+    "pydantic.BaseModel",
+    "pydantic_settings.BaseSettings",
+    "typing_extensions.TypedDict",
+]
+runtime-evaluated-decorators = [
+    "fastapi.Depends",
+    "fastapi.Query",
+    "fastapi.Body",
+    "fastapi.Path",
+    "fastapi.Header",
+    "fastapi.Cookie",
+    "fastapi.Form",
+    "fastapi.File",
+]
+
+[tool.ruff.lint.pylint]
+max-args = 10              # Node functions могут быть сложными
+max-branches = 15          # Conditional edges
+max-returns = 8            # Multiple return points в nodes
+max-statements = 75        # Большие node functions
+max-public-methods = 25    # Agent классы
+
+[tool.ruff.lint.flake8-builtins]
+builtins-ignorelist = ["id", "input", "output", "state", "type"]
+
+# Pytest configuration for structured tests (Phase 0.4.5)
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+
+markers = [
+    "asyncio: marks tests as async",
+    "common_unit: marks tests for src_common (fast, no deps)",
+    "unit: marks tests as unit test (fast, no external deps)",
+    "integration: marks tests as integration test (slow, requires services)",
+    "requires_falkordb: marks tests requiring FalkorDB connection",
+    "requires_llm: marks tests requiring LLM API access",
+    "requires_docker: marks tests requiring Docker",
+    "requires_docling: marks tests requiring Docling PDF processing",
+    "slow: marks test as slow running",
+    "pypict: marks tests using pypict combinatorial generation",
+    "serial: marks tests that must run serially (no parallel)",
+    "pairwise: marks tests using pairwise-like combinations (Hypothesis sampled_from)",
+    "hypothesis: marks tests using Hypothesis property-based testing",
+    # Testing toolkit markers (ADR-0010 + ADR-0011)
+    "vcr: marks tests using VCR.py cassettes for HTTP recording/replay",
+    "snapshot: marks tests using Syrupy snapshot assertions",
+    "benchmark: marks tests as performance benchmarks (skipped by default)",
+]
+
+addopts = [
+    "--strict-markers",
+    "--strict-config",
+    "--cov=src_common",
+    "--cov-report=term-missing:skip-covered",
+    "--cov-report=html:htmlcov",
+    "--cov-report=xml",
+    "--cov-report=json",
+    # Coverage threshold enforced in CI only (quality.yml)
+    # "--cov-fail-under=95",
+    "-v",
+    # Parallel execution configuration
+    "-n", "auto",
+    "--dist", "loadscope",
+    # Testing toolkit defaults (ADR-0010)
+    "--benchmark-skip",       # Skip benchmarks by default (run with --benchmark-only)
+    "--vcr-record=none",      # Don't record new cassettes by default
+]
+
+[tool.coverage.run]
+source = ["src_common"]
+branch = true
+omit = [
+    "*/tests/*",
+    "*/__pycache__/*",
+    "*/venv/*",
+    "*/.venv/*",
+]
+
+[tool.coverage.report]
+precision = 2
+show_missing = true
+skip_covered = false
+# Coverage threshold enforced in CI only (quality.yml)
+# fail_under = 95.0
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+    "@abstractmethod",
+]
+
+# Pyrefly configuration
+[tool.pyrefly]
+# Limit type checking to source and test directories
+project-includes = ["src_common", "tests"]
+# Error suppression for known false positives
+errors = { "missing-attribute" = "ignore", "missing-import" = "ignore", "bad-override" = "ignore", "bad-return" = "ignore", "bad-argument-type" = "ignore", "unsupported-operation" = "ignore", "unexpected-keyword" = "ignore", "invalid-argument" = "ignore", "no-matching-overload" = "ignore" }
+
+# ty configuration (Phase 0.4.7 - Astral ty 0.0.4)
+[tool.ty.environment]
+python-version = "3.13"
+root = ["./src_common"]
+
+[tool.ty.src]
+include = ["src_common"]
+exclude = ["**/tests/**", "**/__pycache__/**", "**/venv/**", "**/.venv/**"]
+respect-ignore-files = true
+
+[tool.ty.terminal]
+output-format = "full"
+error-on-warning = false
+
+# Relaxed rules for gradual typing adoption
+[tool.ty.rules]
+possibly-unresolved-reference = "warn"
+unresolved-import = "warn"
+invalid-type-form = "warn"
+
+# Test files: relaxed type checking
+[[tool.ty.overrides]]
+include = ["tests/**", "**/tests/**"]
+[tool.ty.overrides.rules]
+possibly-unresolved-reference = "ignore"
+unresolved-import = "ignore"
+
+# Factory pattern: ty doesn't understand class factories
+[[tool.ty.overrides]]
+include = ["src_common/clients/base.py"]
+[tool.ty.overrides.rules]
+too-many-positional-arguments = "ignore"
+
+# =============================================================================
+# Mutmut Configuration (ADR-0010)
+# =============================================================================
+[tool.mutmut]
+# Critical modules only (reduces runtime from hours to ~40-50 min)
+paths_to_mutate = [
+    "src_common/dspy/",
+    "src_common/extractors/",
+]
+tests_dir = ["tests/"]
+# Additional pytest args for faster mutation testing
+pytest_add_cli_args = ["-x", "--no-cov", "-q"]
+pytest_add_cli_args_test_selection = ["-m", "not slow"]
+
