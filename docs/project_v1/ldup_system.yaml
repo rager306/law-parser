@@ -1,0 +1,136 @@
+system:
+  name: "LDUP - Legal Document Universal Parser"
+  version: "0.9-beta"
+  description: >
+    Универсальный гибридный парсер нормативно-правовых актов.
+    Использует архитектуру DSPy 3.0.4, rule-first подход и частичную LLM-асистенцию.
+    Экономит токены за счёт формализации 70–80% типовых структурных и временных шаблонов.
+    Поддерживает все основные XML-стандарты LegalTech.
+
+architecture:
+  core_engine: "DSPy 3.0.4 Hybrid Graph"
+  workflow_mode: "Rule-first with LLM-fallback"
+  token_efficiency_target: 0.8
+  self_learning: true
+  feedback_controller: "SRC v2"
+  caching_system: "HCO hybrid cache"
+  concurrency: "async-enabled (Fast-LangGraph runtime)"
+
+inputs:
+  supported_sources:
+    - name: "КонсультантПлюс"
+      type: file
+      formats: ["WordML 2003", "DOC", "RTF"]
+    - name: "Гарант"
+      type: http
+      formats: ["HTML", "XML", "TXT"]
+    - name: "Кодекс"
+      type: http
+      formats: ["HTML", "DOCX"]
+    - name: "pravo.gov.ru"
+      type: http
+      formats: ["HTML", "PDF"]
+    - name: "Custom/interactive"
+      type: puppeteer
+      formats: ["HTML", "PDF", "DOCX"]
+  input_normalization:
+    - convert_all_to: "LDML (Legal Document Markup Language)"
+    - encoding: "UTF-8"
+    - language: "ru"
+
+processing_pipeline:
+  stage_1_structure:
+    module: "GEPA 3.5"
+    function: "analyze_structure"
+    tasks:
+      - identify_chapters
+      - identify_articles
+      - identify_parts
+      - identify_clauses
+    deterministic_rules: true
+    use_llm_assist: false
+  stage_2_morphology:
+    module: "SIMBA 2.2"
+    function: "morpho_semantic_tagging"
+    ruleset: "russian_legal_patterns.yaml"
+    output: ["obligation", "permission", "prohibition", "definition", "sanction"]
+  stage_3_temporal:
+    module: "MiPROv2 + Temporal Memory v3"
+    function: "extract_effective_intervals"
+    supports:
+      - valid_time
+      - transaction_time
+  stage_4_causal:
+    module: "TCGR plugin"
+    function: "temporal_causal_linking"
+    output: ["amends", "repeals", "affects", "derivesFrom"]
+  stage_5_semantic_completion:
+    module: "LLM-assisted parsing"
+    purpose: >
+      Обработка неформализованных фрагментов, абзацев со смешанной логикой, сносок и примечаний.
+    activation_policy:
+      max_llm_usage_percent: 0.2
+      triggers: ["unknown structure", "ambiguous semantics", "unclassified article"]
+  stage_6_feedback:
+    module: "SRC v2"
+    function: "self_refinement"
+    feedback_type: ["structure_fix", "semantic_labeling", "temporal_correction"]
+  stage_7_cache:
+    module: "HCO Cache"
+    store: "./cache/semantic_embeddings"
+    expires_in_days: 30
+
+standards_mapping:
+  AkomaNtoso:
+    export: true
+    mapping_from:
+      - GEPA
+      - MiPROv2
+  LegalRuleML:
+    export: true
+    mapping_from:
+      - SIMBA
+      - MiPROv2
+  MetaLex:
+    id_schema: "44fz-{article}-{paragraph}"
+  LegalDocML-RU:
+    language: "ru"
+    semantic_dictionary: "legal_docml_ru_lexicon.yaml"
+  NormML:
+    use_for_feedback: true
+
+outputs:
+  export_formats: ["AkomaNtoso", "LegalRuleML", "MetaLex", "NormML"]
+  persistence:
+    graph_storage: "FalkorDB + Graffiti Temporal Layer"
+    metadata_index: "ElasticSearch"
+    yaml_spec_export: true
+  interfaces:
+    - LangGraph Agent
+    - REST API
+    - CLI
+
+yaml_specifications:
+  general_spec: "ldup_general.yaml"
+  private_specs_directory: "./specs/"
+  syntax: "compatible_with_Anthropic_Skill_Format"
+  description: >
+    Общие YAML-шаблоны описывают структуру документов и языковые паттерны.
+    Частные YAML — правила для конкретных актов (напр. 44-ФЗ, 223-ФЗ и т.д.).
+
+monitoring:
+  metrics:
+    - parsing_accuracy
+    - llm_usage_rate
+    - temporal_resolution_accuracy
+    - structural_consistency
+  logging:
+    level: "INFO"
+    file: "./logs/ldup.log"
+  telemetry:
+    enable_feedback_collection: true
+
+security:
+  data_storage_policy: "Local encrypted"
+  pii_compliance: "N/A"
+  access_control: "Role-based"

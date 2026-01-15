@@ -10,12 +10,6 @@
 # AI Assistant Context Files (auto-generated)
 **/CLAUDE.md
 
-# Documentation files (PDFs, papers, generated docs)
-docs/**/*.*
-!docs/**/*.md
-!docs/**/README*
-
-
 # Removed Windows wrapper files per user request
 hive-mind-prompt-*.txt
 
@@ -107,8 +101,6 @@ Thumbs.db
 .ipynb_checkpoints/
 *.ipynb
 
-# Documentation builds
-docs/_build/
 site/
 
 # Logs
@@ -118,7 +110,6 @@ site/
 report/
 
 # Legal documents (44-FZ data) - large files
-doc_domain_44fz/
 *.zip
 
 # Runtime data (optimization workflow outputs)
