@@ -1,0 +1,34 @@
+# LDUP v4 Architecture Documentation
+
+**Created:** 2026-01-18
+**Status:** Complete
+
+## Files
+
+| File | Lines | Description |
+|------|-------|-------------|
+| README.md | 104 | Overview + changelog summary |
+| CHANGELOG.md | 451 | Detailed reasons for changes vs v3 |
+| architecture.md | 281 | Core architecture with compile/runtime separation |
+| workflow.md | 674 | 2-phase workflow + self-improvement loop |
+| testing.md | 570 | hypothesis + unit/integration tests |
+| observability.md | 532 | loguru logging + metrics |
+| serialization.md | 516 | Pydantic + adaptix for rules |
+| self_improvement.md | 639 | Self-improvement with safety rails |
+| mermaid.md | 558 | Updated diagrams for v4 |
+
+## Key Changes vs v3
+
+1. **DSPy 3.0.4 → 3.1** - Bug fixes in optimizer compilation
+2. **YAML → Pydantic + adaptix** - Type safety, 2-10x faster serialization
+3. **Add loguru** - Structured logging with rotation
+4. **Add hypothesis** - Property-based testing
+5. **Compile/Runtime separation** - Accurate architecture
+6. **Safety rails** - Rollback, circuit-breaker, convergence
+
+## Quick Start
+
+1. Read `README.md` for overview
+2. Read `CHANGELOG.md` for detailed changes
+3. Read `architecture.md` for components
+4. Read `workflow.md` for execution flow
